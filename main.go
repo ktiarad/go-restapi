@@ -16,7 +16,8 @@ func main() {
 	db := database.ConnectDB()
 	// orderRepo := repositories.NewOrderRepo(db)
 	orderRepo := repositories.NewOrderRepo(db)
-	orderService := services.NewOrderService(orderRepo)
+	itemRepo := repositories.NewItemRepo(db)
+	orderService := services.NewOrderService(orderRepo, itemRepo)
 	orderController := controllers.NewOrderController(orderService)
 
 	server := server.NewServer(orderController)

@@ -8,7 +8,7 @@ import (
 
 type OrderRepo interface {
 	GetAllOrders() (*[]models.Order, error)
-	CreateOrder(request *models.Order) error
+	CreateOrder(request *models.Order) (uint, error)
 	UpdateOrder(request *models.Order, id uint) error
 	DeleteOrder(id uint) error
 }
@@ -25,20 +25,25 @@ func NewOrderRepo(db *gorm.DB) OrderRepo {
 
 func (r *orderRepo) GetAllOrders() (*[]models.Order, error) {
 	var orders []models.Order
-	err := r.db.Find(&orders).Error
+	// err := r.db.Find(&orders).Error
+
+	// var items []models.Item
+	err := r.db.Preload("Items").Find(&orders).Error
 
 	return &orders, err
 }
 
-func (r *orderRepo) CreateOrder(request *models.Order) error {
-	err := r.db.Create(request).Error
-	return err
+func (r *orderRepo) CreateOrder(request *models.Order) (uint, error) {
+	result := r.db.Create(request)
+	err := result.Error
+	id := request.ID
+	return id, err
 }
 
 func (r *orderRepo) UpdateOrder(request *models.Order, id uint) error {
 	var order models.Order
 
-	err := r.db.Model(&order).Where("id = ?", id).Updates(models.Order{CustomerName: request.CustomerName}).Error
+	err := r.db.Model(&order).Where("id = ?", id).Updates(models.Order{CustomerName: request.CustomerName, Items: request.Items}).Error
 	return err
 }
 

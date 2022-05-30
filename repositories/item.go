@@ -2,12 +2,14 @@ package repositories
 
 import (
 	"go-restapi/models"
+	"log"
 
 	"gorm.io/gorm"
 )
 
 type ItemRepo interface {
 	GetAllItems() (*[]models.Item, error)
+	GetItemsById(id uint) (*[]models.Item, error)
 	CreateItem(request *models.Item) error
 	UpdateItem(request *models.Item, id uint) error
 	DeleteItem(id uint) error
@@ -31,8 +33,22 @@ func (r *itemRepo) GetAllItems() (*[]models.Item, error) {
 	return &items, err
 }
 
+func (r *itemRepo) GetItemsById(id uint) (*[]models.Item, error) {
+	log.Default().Printf("peeking GetItemsById, id :%d", id)
+
+	var items []models.Item
+
+	err := r.db.Where("order_id = ?", id).Find(&items).Error
+	if &items == nil {
+		log.Default().Printf("DATA NOT FOUND")
+	}
+
+	return &items, err
+}
+
 func (r *itemRepo) CreateItem(request *models.Item) error {
 	err := r.db.Create(request).Error
+	log.Default().Println("CreateItem at itemrepo")
 	return err
 }
 
