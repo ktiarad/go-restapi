@@ -4,7 +4,6 @@ import (
 	"go-restapi/models"
 	"go-restapi/params"
 	"go-restapi/repositories"
-	"log"
 	"net/http"
 )
 
@@ -53,7 +52,6 @@ func (o *OrderServices) CreateOrder(req *params.OrderCreate) *params.Response {
 		currentItem.ItemCode = item.ItemCode
 		currentItem.Description = item.Description
 		currentItem.Quantity = item.Quantity
-		// currentItem.OrderID =
 		items = append(items, currentItem)
 	}
 	order := &models.Order{
@@ -78,34 +76,32 @@ func (o *OrderServices) CreateOrder(req *params.OrderCreate) *params.Response {
 }
 
 func (o *OrderServices) UpdateOrder(req *params.OrderUpdate, id uint) *params.Response {
-	var items []models.Item
 	for _, item := range req.Items {
 		var currentItem models.Item
 
-		currentItem.ID = item.ID
 		currentItem.ItemCode = item.ItemCode
 		currentItem.Description = item.Description
 		currentItem.Quantity = item.Quantity
 
-		items = append(items, currentItem)
-		log.Default().Printf("current item :%v", currentItem)
-		err := o.ItemRepo.UpdateItem(&currentItem, id)
+		err := o.ItemRepo.UpdateItem(&currentItem, item.ID)
 		if err != nil {
-			log.Default().Printf("error at UpdateItem :%v ", err)
+			return &params.Response{
+				Status:         http.StatusInternalServerError,
+				Error:          "INTERNAL SERVER ERROR, when updating items",
+				AdditionalInfo: err.Error(),
+			}
 		}
 	}
 
 	order := &models.Order{
 		CustomerName: req.CustomerName,
-		Items:        &items,
 	}
-	// id := req.ID
 	err := o.OrderRepo.UpdateOrder(order, id)
 
 	if err != nil {
 		return &params.Response{
 			Status:         http.StatusInternalServerError,
-			Error:          "INTERNAL SERVER ERROR",
+			Error:          "INTERNAL SERVER ERROR, when updating order",
 			AdditionalInfo: err.Error(),
 		}
 	}
@@ -117,11 +113,20 @@ func (o *OrderServices) UpdateOrder(req *params.OrderUpdate, id uint) *params.Re
 }
 
 func (o *OrderServices) DeleteOrder(id uint) *params.Response {
-	err := o.OrderRepo.DeleteOrder(id)
+	err := o.ItemRepo.DeleteItem(id)
 	if err != nil {
 		return &params.Response{
 			Status:         http.StatusInternalServerError,
-			Error:          "INTERNAL SERVER ERROR",
+			Error:          "INTERNAL SERVER ERROR, when deleting items",
+			AdditionalInfo: err.Error(),
+		}
+	}
+
+	err = o.OrderRepo.DeleteOrder(id)
+	if err != nil {
+		return &params.Response{
+			Status:         http.StatusInternalServerError,
+			Error:          "INTERNAL SERVER ERROR, when deleteing order",
 			AdditionalInfo: err.Error(),
 		}
 	}

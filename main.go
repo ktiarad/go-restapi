@@ -9,12 +9,7 @@ import (
 )
 
 func main() {
-	// port := ":8080"
-
-	// log.Default().Println("Server running at port :", port)
-
 	db := database.ConnectDB()
-	// orderRepo := repositories.NewOrderRepo(db)
 	orderRepo := repositories.NewOrderRepo(db)
 	itemRepo := repositories.NewItemRepo(db)
 	orderService := services.NewOrderService(orderRepo, itemRepo)

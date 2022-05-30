@@ -25,9 +25,7 @@ func NewOrderRepo(db *gorm.DB) OrderRepo {
 
 func (r *orderRepo) GetAllOrders() (*[]models.Order, error) {
 	var orders []models.Order
-	// err := r.db.Find(&orders).Error
 
-	// var items []models.Item
 	err := r.db.Preload("Items").Find(&orders).Error
 
 	return &orders, err
@@ -43,7 +41,7 @@ func (r *orderRepo) CreateOrder(request *models.Order) (uint, error) {
 func (r *orderRepo) UpdateOrder(request *models.Order, id uint) error {
 	var order models.Order
 
-	err := r.db.Model(&order).Where("id = ?", id).Updates(models.Order{CustomerName: request.CustomerName, Items: request.Items}).Error
+	err := r.db.Model(&order).Where("id = ?", id).Updates(models.Order{CustomerName: request.CustomerName}).Error
 	return err
 }
 

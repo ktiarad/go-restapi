@@ -34,7 +34,6 @@ func (r *itemRepo) GetAllItems() (*[]models.Item, error) {
 }
 
 func (r *itemRepo) GetItemsById(id uint) (*[]models.Item, error) {
-	log.Default().Printf("peeking GetItemsById, id :%d", id)
 
 	var items []models.Item
 
@@ -48,14 +47,19 @@ func (r *itemRepo) GetItemsById(id uint) (*[]models.Item, error) {
 
 func (r *itemRepo) CreateItem(request *models.Item) error {
 	err := r.db.Create(request).Error
-	log.Default().Println("CreateItem at itemrepo")
 	return err
 }
 
 func (r *itemRepo) UpdateItem(request *models.Item, id uint) error {
 	var item models.Item
 
-	err := r.db.Model(&item).Where("id = ?", id).Updates(models.Item{}).Error
+	err := r.db.Model(&item).
+		Where("id = ?", id).
+		Updates(models.Item{
+			ItemCode:    request.ItemCode,
+			Description: request.Description,
+			Quantity:    request.Quantity,
+		}).Error
 
 	return err
 }
@@ -63,7 +67,7 @@ func (r *itemRepo) UpdateItem(request *models.Item, id uint) error {
 func (r *itemRepo) DeleteItem(id uint) error {
 	var item models.Item
 
-	err := r.db.Model(&item).Where("id = ?", id).Delete(&item).Error
+	err := r.db.Model(&item).Where("order_id = ?", id).Delete(&item).Error
 
 	return err
 }
